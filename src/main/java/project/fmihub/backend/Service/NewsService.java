@@ -75,8 +75,8 @@ public class NewsService {
         }
     }
 
-    public Collection<News> getAllNewsByLanguage(String language) {
-        Collection<News> articles = newsRepository.findAllByLanguageOrderByDateAsc(language);
+    public List<News> getAllNewsByLanguage(String language) {
+        List<News> articles = newsRepository.findAllByLanguageOrderByDateAsc(language);
         return articles;
     }
 
