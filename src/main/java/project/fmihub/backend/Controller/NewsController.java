@@ -19,11 +19,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
 public class NewsController {
-    private final NewsRepository newsRepository;
     private final NewsService newsService;
     private final NewsModelAssembler newsModelAssembler;
     public NewsController(NewsRepository newsRepository, NewsService newsService, NewsModelAssembler newsModelAssembler) {
-        this.newsRepository = newsRepository;
         this.newsService = newsService;
         this.newsModelAssembler = newsModelAssembler;
     }
@@ -36,11 +34,5 @@ public class NewsController {
         return CollectionModel.of(news, linkTo(methodOn(NewsController.class).all(lang)).withSelfRel());
     }
 
-    @GetMapping("/api/news/{id}")
-    EntityModel<News> one(@PathVariable Long id) {
-        News news = newsRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("News not found"));
-        return newsModelAssembler.toModel(news);
-    }
 
 }
