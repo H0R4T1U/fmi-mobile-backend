@@ -12,7 +12,6 @@ public class NewsModelAssembler implements RepresentationModelAssembler<News, En
     @Override
     public EntityModel<News> toModel(News entity) {
         return EntityModel.of(entity,
-                linkTo(methodOn(NewsController.class).one(entity.getId())).withSelfRel(),
                 linkTo(methodOn(NewsController.class).all(entity.getLanguage())).withRel("news"));
     }
 }
