@@ -6,7 +6,9 @@ import java.util.Date;
 import java.util.Objects;
 
 @Entity
-@Table(name="news")
+@Table(name = "news", indexes = {
+        @Index(name = "news_language_index", columnList = "language")
+})
 public class News {
     private @Id
     @GeneratedValue long id;
