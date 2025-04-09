@@ -20,52 +20,15 @@ public class NewsController {
     private final NewsModelAssembler newsModelAssembler;
     public NewsController(NewsRepository newsRepository, NewsModelAssembler newsModelAssembler) {
          this.newsRepository = newsRepository;
-        this.newsModelAssembler = newsModelAssembler;
+         this.newsModelAssembler = newsModelAssembler;
     }
 
-    @GetMapping("/news")
-    CollectionModel<EntityModel<News>> all(){
-        List<EntityModel<News>> news = newsRepository.findAll().stream()
+    @GetMapping("/api/news/{language}")
+    CollectionModel<EntityModel<News>> all(@PathVariable String language) {
+        List<EntityModel<News>> news = newsRepository.findAllByLanguageOrderByDateAsc(language).stream()
                 .map(newsModelAssembler::toModel)
                 .collect(Collectors.toList());
-        return CollectionModel.of(news, linkTo(methodOn(NewsController.class).all()).withSelfRel());
+        return CollectionModel.of(news, linkTo(methodOn(NewsController.class).all(language)).withSelfRel());
     }
 
-    @GetMapping("/news/{id}")
-    EntityModel<News> one(@PathVariable Long id) {
-        News news = newsRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("News not found"));
-        return newsModelAssembler.toModel(news);
-    }
-
-    @PostMapping("/news")
-    ResponseEntity<?> add(@RequestBody News news) {
-        EntityModel<News> newsModel = newsModelAssembler.toModel(newsRepository.save(news));
-        return ResponseEntity
-                .created(newsModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(newsModel);
-    }
-
-    @PutMapping("/news/{id}")
-    ResponseEntity<?> update(@RequestBody News news, @PathVariable Long id) {
-        News updatedNews = newsRepository.findById(id)
-                .map(stire -> {
-                    stire.setTitle(news.getTitle());
-                    stire.setDate(news.getDate());
-                    stire.setLocation(news.getLocation());
-                    stire.setLanguage(news.getLanguage());
-                    return newsRepository.save(stire);
-                })
-                .orElseGet(() -> newsRepository.save(news));
-        EntityModel<News> newsModel = newsModelAssembler.toModel(updatedNews);
-        return ResponseEntity
-                .created(newsModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(newsModel);
-    }
-
-    @DeleteMapping("/news/{id}")
-    ResponseEntity<?> delete(@PathVariable Long id) {
-        newsRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
 }
