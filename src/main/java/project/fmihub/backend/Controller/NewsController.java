@@ -7,6 +7,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import project.fmihub.backend.Domain.News;
 import project.fmihub.backend.Repository.NewsRepository;
+import project.fmihub.backend.Service.NewsService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,35 +17,21 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
 public class NewsController {
-    private final NewsRepository newsRepository;
+    private final NewsService newsService;
     private final NewsModelAssembler newsModelAssembler;
-    public NewsController(NewsRepository newsRepository, NewsModelAssembler newsModelAssembler) {
-         this.newsRepository = newsRepository;
+    public NewsController(NewsService newsService, NewsModelAssembler newsModelAssembler) {
+        this.newsService = newsService;
         this.newsModelAssembler = newsModelAssembler;
     }
 
-    @GetMapping("/news")
-    CollectionModel<EntityModel<News>> all(){
-        List<EntityModel<News>> news = newsRepository.findAll().stream()
+    @GetMapping("/api/news/{lang}")
+    CollectionModel<EntityModel<News>> all(@PathVariable String lang) {
+        List<EntityModel<News>> news = newsService.getAllNewsByLanguage(lang).stream()
                 .map(newsModelAssembler::toModel)
                 .collect(Collectors.toList());
-        return CollectionModel.of(news, linkTo(methodOn(NewsController.class).all()).withSelfRel());
+        return CollectionModel.of(news, linkTo(methodOn(NewsController.class).all(lang)).withSelfRel());
     }
 
-    @GetMapping("/news/{id}")
-    EntityModel<News> one(@PathVariable Long id) {
-        News news = newsRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("News not found"));
-        return newsModelAssembler.toModel(news);
-    }
-
-    @PostMapping("/news")
-    ResponseEntity<?> add(@RequestBody News news) {
-        EntityModel<News> newsModel = newsModelAssembler.toModel(newsRepository.save(news));
-        return ResponseEntity
-                .created(newsModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(newsModel);
-    }
 
     @PutMapping("/news/{id}")
     ResponseEntity<?> update(@RequestBody News news, @PathVariable Long id) {
