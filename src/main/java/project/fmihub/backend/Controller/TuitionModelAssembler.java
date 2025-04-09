@@ -5,18 +5,18 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Component;
-import project.fmihub.backend.Domain.Student;
+import project.fmihub.backend.DTO.TuitionDTO;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 @Component
-public class StudentModelAssembler implements RepresentationModelAssembler<Student, EntityModel<Student>> {
+public class TuitionModelAssembler implements RepresentationModelAssembler<TuitionDTO, EntityModel<TuitionDTO>> {
 
     @Override
-    public EntityModel<Student> toModel(Student student) {
+    public EntityModel<TuitionDTO> toModel(TuitionDTO tuition) {
 
-        return EntityModel.of(student, //
-                WebMvcLinkBuilder.linkTo(methodOn(StudentController.class).byEmail(student.getEmail())).withSelfRel());
+        return EntityModel.of(tuition, //
+                WebMvcLinkBuilder.linkTo(methodOn(TuitionController.class).byPayer(tuition.getPayer())).withSelfRel());
     }
 }

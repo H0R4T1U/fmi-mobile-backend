@@ -1,6 +1,5 @@
 package project.fmihub.backend.Controller;
 
-import org.hibernate.persister.entity.mutation.InsertCoordinatorStandard;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.hateoas.EntityModel;
@@ -9,7 +8,6 @@ import org.springframework.hateoas.IanaLinkRelations;
 import project.fmihub.backend.Domain.News;
 import project.fmihub.backend.Repository.NewsRepository;
 
-import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,7 +19,7 @@ public class NewsController {
     private final NewsRepository newsRepository;
     private final NewsModelAssembler newsModelAssembler;
     public NewsController(NewsRepository newsRepository, NewsModelAssembler newsModelAssembler) {
-        this.newsRepository = newsRepository;
+         this.newsRepository = newsRepository;
         this.newsModelAssembler = newsModelAssembler;
     }
 
@@ -58,9 +56,7 @@ public class NewsController {
                     stire.setLanguage(news.getLanguage());
                     return newsRepository.save(stire);
                 })
-                .orElseGet(() -> {
-                    return newsRepository.save(news);
-                });
+                .orElseGet(() -> newsRepository.save(news));
         EntityModel<News> newsModel = newsModelAssembler.toModel(updatedNews);
         return ResponseEntity
                 .created(newsModel.getRequiredLink(IanaLinkRelations.SELF).toUri())

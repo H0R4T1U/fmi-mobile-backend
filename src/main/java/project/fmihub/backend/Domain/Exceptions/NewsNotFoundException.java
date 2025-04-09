@@ -1,4 +1,4 @@
-package project.fmihub.backend.Domain;
+package project.fmihub.backend.Domain.Exceptions;
 
 public class NewsNotFoundException extends Exception {
     public NewsNotFoundException(Long id) {

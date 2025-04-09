@@ -2,6 +2,7 @@ package project.fmihub.backend.Controller;
 
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Component;
 import project.fmihub.backend.Domain.News;
 
@@ -12,7 +13,7 @@ public class NewsModelAssembler implements RepresentationModelAssembler<News, En
     @Override
     public EntityModel<News> toModel(News entity) {
         return EntityModel.of(entity,
-                linkTo(methodOn(NewsController.class).one(entity.getId())).withSelfRel(),
+                WebMvcLinkBuilder.linkTo(methodOn(NewsController.class).one(entity.getId())).withSelfRel(),
                 linkTo(methodOn(NewsController.class).all()).withRel("news"));
     }
 }

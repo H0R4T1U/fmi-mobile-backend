@@ -1,7 +1,8 @@
-package project.fmihub.backend.Domain;
+package project.fmihub.backend.Domain.Advices;
 
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import project.fmihub.backend.Domain.Exceptions.NewsNotFoundException;
 
 @RestControllerAdvice
 public class NewsNotFoundAdvice {
