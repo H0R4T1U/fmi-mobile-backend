@@ -8,5 +8,5 @@ import project.fmihub.backend.Domain.TemporaryGradesId;
 import java.util.List;
 
 public interface TemporaryGradesRepository extends JpaRepository<TemporaryGrades, TemporaryGradesId> {
-    List<TemporaryGrades> findByIdStudent(String student);
+    List<TemporaryGrades> findByTemporaryGradesIdStudent(String student);
 }
