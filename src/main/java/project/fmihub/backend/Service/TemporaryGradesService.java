@@ -19,6 +19,6 @@ public class TemporaryGradesService {
     }
 
     public List<TemporaryGrades> findByIdStudent(String Student) {
-        return temporarygradesRepository.findByIdStudent(Student);
+        return temporarygradesRepository.findByTemporaryGradesIdStudent(Student);
     }
 }
