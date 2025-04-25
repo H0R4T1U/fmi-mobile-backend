@@ -16,7 +16,7 @@ public class Tuition {
     @Column(name = "type", nullable = false, length = 50)
     private String type;
 
-    @Column(name = "description", nullable = false, length = 20)
+    @Column(name = "description", nullable = false, length = 30)
     private String description;
 
     @Column(name = "year", nullable = false, length = 12)

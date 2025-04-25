@@ -5,6 +5,7 @@ import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import project.fmihub.backend.Domain.News;
@@ -17,7 +18,9 @@ import java.util.Map;
 
 @Service
 public class NewsService {
+    @Autowired
     private final NewsRepository newsRepository;
+
     public NewsService(NewsRepository newsRepository) {
         this.newsRepository = newsRepository;
     }
@@ -66,7 +69,7 @@ public class NewsService {
     }
 
     private void removeOldArticle(String language){
-        List<News> articles = newsRepository.findAllByLanguageOrderByDateAsc(language);
+        List<News> articles = newsRepository.findAllByLanguageOrderByDateDesc(language);
         int excessCount = articles.size() - 20;
         if(excessCount > 0){
             List<News> toDelete = articles.subList(0, excessCount);
@@ -76,7 +79,7 @@ public class NewsService {
     }
 
     public List<News> getAllNewsByLanguage(String language) {
-        return newsRepository.findAllByLanguageOrderByDateAsc(language);
+        return newsRepository.findAllByLanguageOrderByDateDesc(language);
     }
 
     public Collection<News> getAllNews() {

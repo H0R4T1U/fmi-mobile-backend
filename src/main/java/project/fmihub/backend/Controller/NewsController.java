@@ -9,7 +9,7 @@ import org.springframework.hateoas.IanaLinkRelations;
 import project.fmihub.backend.Domain.News;
 import project.fmihub.backend.Repository.NewsRepository;
 import project.fmihub.backend.Service.NewsService;
-
+//import project.fmihub.backend.Domain.News;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
