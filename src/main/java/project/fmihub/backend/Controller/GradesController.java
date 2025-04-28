@@ -43,6 +43,7 @@ public class GradesController {
         dto.setCourse_code(grade.getCourseCode());
         dto.setCourse(grade.getCourse());
         dto.setSemester(grade.getSemester());
+        dto.setCredits(grade.getCredits());
         dto.setDate(grade.getDate());
         return dto;
     }

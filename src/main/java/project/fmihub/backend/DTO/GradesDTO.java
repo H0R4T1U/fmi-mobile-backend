@@ -10,9 +10,16 @@ public class GradesDTO {
     private String course_code;
     private String course;
     private String grade;
+    private Integer credits;
     private LocalDate date;
 
 
+    public Integer getCredits() {
+        return credits;
+    }
+    public void setCredits(Integer credits) {
+        this.credits = credits;
+    }
     public String getStudent() {
         return student;
     }
