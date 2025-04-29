@@ -14,7 +14,14 @@ public class ExamsDTO {
     private String teacher;
     private String course;
     private String group;
+    private Integer semester;
 
+    public Integer getSemester() {
+        return semester;
+    }
+    public void setSemester(Integer semester) {
+        this.semester = semester;
+    }
     public String getStudent() {
         return student;
     }

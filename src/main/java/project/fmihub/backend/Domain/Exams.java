@@ -40,6 +40,15 @@ public class Exams {
     @Column(name = "group", nullable = false, length = 13)
     private String group;
 
+    @Column(name = "semester", nullable = false)
+    private Integer semester;
+
+    public Integer getSemester() {
+        return semester;
+    }
+    public void setSemester(Integer semester) {
+        this.semester = semester;
+    }
     public ExamsId getId() {
         return id;
     }

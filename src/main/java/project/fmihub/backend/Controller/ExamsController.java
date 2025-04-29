@@ -47,6 +47,7 @@ public class ExamsController {
         examDTO.setTeacher(exam.getTeacher());
         examDTO.setCourse(exam.getCourse());
         examDTO.setGroup(exam.getGroup());
+        examDTO.setSemester(exam.getSemester());
         return examDTO;
     }
 }
