@@ -8,4 +8,5 @@ import java.util.List;
 public interface NewsRepository extends JpaRepository<News, Long> {
     boolean existsByTitleAndLanguage(String title, String language);
     List<News> findAllByLanguageOrderByDateDesc(String language);
+    List<News> findAllByLanguageOrderByDateAsc(String language);
 }
