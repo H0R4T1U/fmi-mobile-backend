@@ -50,11 +50,13 @@ public class NewsService {
             List<SyndEntry> entries = feed.getEntries();
             int count = Math.min(entries.size(), 20);
             System.out.println("Total entries fetched " + entries.size() + " articles for language:"+language);
+            //entries.forEach(System.out::println);
             int addedcount = 0;
             for(int i = 0; i < count; i++){
                 SyndEntry entry = entries.get(i);
                 if (!newsRepository.existsByTitleAndLanguage(entry.getTitle(), language)){
                     News article = new News(entry.getTitle(), entry.getPublishedDate(), entry.getLink(), language);
+                    System.out.println(article);
                     newsRepository.save(article);
                     addedcount++;
                 }
@@ -69,7 +71,7 @@ public class NewsService {
     }
 
     private void removeOldArticle(String language){
-        List<News> articles = newsRepository.findAllByLanguageOrderByDateDesc(language);
+        List<News> articles = newsRepository.findAllByLanguageOrderByDateAsc(language);
         int excessCount = articles.size() - 20;
         if(excessCount > 0){
             List<News> toDelete = articles.subList(0, excessCount);
