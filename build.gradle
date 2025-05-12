@@ -19,6 +19,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'com.stripe:stripe-java:24.6.0'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
@@ -27,6 +28,9 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'com.rometools:rome:1.18.0'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 }
 
 tasks.named('test') {
