@@ -24,7 +24,7 @@ public class PaymentController {
     public ResponseEntity<?> createCheckoutSession(@RequestBody PaymentRequest paymentRequest) throws StripeException {
         try {
             if (paymentRequest.getCurrency() == null) {
-                paymentRequest.setCurrency("ron");
+                paymentRequest.setCurrency("RON");
             }
 
             String clientSecret = stripeService.createPaymentIntent(paymentRequest);
