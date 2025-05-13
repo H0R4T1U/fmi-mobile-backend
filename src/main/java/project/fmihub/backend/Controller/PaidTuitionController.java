@@ -1,9 +1,8 @@
 package project.fmihub.backend.Controller;
 
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import project.fmihub.backend.DTO.PaidTuitionDTO;
 import project.fmihub.backend.Domain.PaidTuition;
@@ -12,27 +11,24 @@ import project.fmihub.backend.Service.PaidTuitionService;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 public class PaidTuitionController {
 
     private final PaidTuitionService service;
-    private final PaidTuitionModelAssembler assembler;
 
-    public PaidTuitionController(PaidTuitionService paidTuitionService,PaidTuitionModelAssembler assembler) {
-        this.assembler = assembler;
-        this.service = paidTuitionService;
+    public PaidTuitionController(PaidTuitionService paidTuitionServic) {
+        this.service = paidTuitionServic;
     }
 
-    @GetMapping("/api/paid-tuitions/{payer}")
-    CollectionModel<EntityModel<PaidTuitionDTO>> byPayer(@PathVariable String payer) {
-        List<EntityModel<PaidTuitionDTO>> tuitions = service.findByIdPayer(payer).stream()
+    @GetMapping("/api/paid-tuitions")
+    public List<PaidTuitionDTO> byPayer(@AuthenticationPrincipal Jwt jwt) {
+
+        String payer = jwt.getClaim("upn");
+        return  service.findByIdPayer(payer).stream()
                 .map(this::toDTO)
-                .map(assembler::toModel)
                 .collect(Collectors.toList());
-        return CollectionModel.of(tuitions, linkTo(methodOn(TuitionController.class).byPayer(payer)).withSelfRel());
+
     }
 
     private PaidTuitionDTO toDTO(PaidTuition paidTuition) {
