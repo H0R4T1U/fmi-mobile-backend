@@ -1,0 +1,66 @@
+package project.fmihub.backend;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+public class SecurityConfig {
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+    private String issuer;
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.audiences}")
+    private String audience = "api://fmihub-backend";  // Default if not specified
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(auth -> auth
+                        .anyRequest().authenticated()
+                )
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt.decoder(jwtDecoder()))
+                );
+        return http.build();
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        // Create JwtDecoder instance using the issuer
+        NimbusJwtDecoder jwtDecoder = JwtDecoders.fromIssuerLocation(issuer);
+
+        // Set up audience validation
+        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(audience);
+        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuer);
+        OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
+
+        // Apply the validator to the decoder
+        jwtDecoder.setJwtValidator(validator);
+
+        return jwtDecoder;
+    }
+
+    // AudienceValidator to ensure the 'aud' claim matches the expected value
+    public static class AudienceValidator implements OAuth2TokenValidator<Jwt> {
+        private final String audience;
+
+        public AudienceValidator(String audience) {
+            this.audience = audience;
+        }
+
+        @Override
+        public OAuth2TokenValidatorResult validate(Jwt jwt) {
+            if (jwt.getAudience().contains(audience)) {
+                return OAuth2TokenValidatorResult.success();
+            }
+            return OAuth2TokenValidatorResult.failure(new OAuth2Error("invalid_token", "Invalid audience", null));
+        }
+    }
+}
