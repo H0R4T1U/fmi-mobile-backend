@@ -22,27 +22,30 @@ ext {
     set('springCloudAzureVersion', "5.22.0")
 }
 dependencies {
+    // Spring boot dependencies
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+    implementation 'com.rometools:rome:1.18.0'
 
+    // Spring Cloud Azure dependencies
     implementation "org.springframework.security:spring-security-config"
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation "org.springframework.boot:spring-boot-starter-security"
-
+    // Spring Cloud Azure Starter
     implementation("com.nimbusds:nimbus-jose-jwt:10.2")
     implementation 'com.azure.spring:spring-cloud-azure-starter-active-directory'
-    implementation 'com.rometools:rome:1.18.0'
     implementation("org.json:json:20250107")
 
+    //  Stripe
     implementation 'com.stripe:stripe-java:24.6.0'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
     runtimeOnly 'org.postgresql:postgresql'
+
+    // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    implementation 'com.rometools:rome:1.18.0'
-    implementation 'org.springframework.boot:spring-boot-starter-hateoas'
 }
 dependencyManagement {
     imports {

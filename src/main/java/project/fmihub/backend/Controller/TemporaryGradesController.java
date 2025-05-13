@@ -1,42 +1,35 @@
 package project.fmihub.backend.Controller;
 
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import project.fmihub.backend.DTO.GradesDTO;
 import project.fmihub.backend.DTO.TemporaryGradesDTO;
-import project.fmihub.backend.Domain.Grades;
 import project.fmihub.backend.Domain.TemporaryGrades;
-import project.fmihub.backend.Service.GradesService;
 import project.fmihub.backend.Service.TemporaryGradesService;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 public class TemporaryGradesController {
     private final TemporaryGradesService gradesService;
-    private final TemporaryGradesModelAssembler gradesModelAssembler;
 
-    public TemporaryGradesController(TemporaryGradesService gradesService, TemporaryGradesModelAssembler gradesModelAssembler) {
+    public TemporaryGradesController(TemporaryGradesService gradesService) {
         this.gradesService = gradesService;
-        this.gradesModelAssembler = gradesModelAssembler;
     }
 
-    @GetMapping("/api/temporary_grades/{student}")
-    CollectionModel<EntityModel<TemporaryGradesDTO>> byStudent(@PathVariable String student) {
-        List<EntityModel<TemporaryGradesDTO>> grades = gradesService.findByIdStudent(student).stream()
+    @GetMapping("/api/temporary-grades")
+    public List<TemporaryGradesDTO> byStudent(@AuthenticationPrincipal Jwt jwt) {
+
+        String student = jwt.getClaim("upn");
+        return gradesService.findByIdStudent(student).stream()
                 .map(this::toDTO)
-                .map(gradesModelAssembler::toModel)
                 .collect(Collectors.toList());
-        return CollectionModel.of(grades, linkTo(methodOn(TemporaryGradesController.class).byStudent(student)).withSelfRel());
-    }
 
+    }
     private TemporaryGradesDTO toDTO(TemporaryGrades grade) {
         TemporaryGradesDTO dto = new TemporaryGradesDTO();
         dto.setStudent(grade.getTemporaryGradesId().getStudent());
