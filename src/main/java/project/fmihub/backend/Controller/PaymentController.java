@@ -21,10 +21,24 @@ public class PaymentController {
     private StripeService stripeService;
 
     @PostMapping("/create-checkout-session")
-    public ResponseEntity<?> createCheckoutSession(@RequestBody PaymentRequest paymentRequest) throws StripeException {
+    public ResponseEntity<?> createCheckoutSession(@RequestBody Map<String, Object> requestMap) throws StripeException {
         try {
-            if (paymentRequest.getCurrency() == null) {
-                paymentRequest.setCurrency("RON");
+            double amount = ((Number) requestMap.get("amount")).doubleValue();
+
+            PaymentRequest paymentRequest = new PaymentRequest();
+            paymentRequest.setAmount(amount);
+            paymentRequest.setCurrency("RON");
+
+            String currentUser = "defauldUser";
+            if (requestMap.containsKey("payer")) {
+                currentUser = (String) requestMap.get("payer");
+            }
+            paymentRequest.setPayer(currentUser);
+
+            Integer tuitionNumber = null;
+            if (requestMap.containsKey("tuitionNumber")) {
+                tuitionNumber = ((Number) requestMap.get("tuitionNumber")).intValue();
+                paymentRequest.setTuitionNumber(tuitionNumber);
             }
 
             String clientSecret = stripeService.createPaymentIntent(paymentRequest);
@@ -33,6 +47,32 @@ public class PaymentController {
             response.put("clientSecret", clientSecret);
 
             return ResponseEntity.ok(response);
+        } catch (StripeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @PostMapping("/success")
+    public ResponseEntity<?> confirmPayment(@RequestParam String paymentIntentId) throws StripeException {
+        try {
+            boolean success = stripeService.processSuccessfulPayment(paymentIntentId);
+
+            if (success) {
+                Map<String, String> response =  new HashMap<>();
+                response.put("status", "success");
+                response.put("message", "Payment confirmed successfully");
+                return ResponseEntity.ok(response);
+            } else {
+                Map<String, String> error =  new HashMap<>();
+                error.put("error", "Payment could not be confirmed");
+                return ResponseEntity.badRequest().body(error);
+            }
         } catch (StripeException e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());

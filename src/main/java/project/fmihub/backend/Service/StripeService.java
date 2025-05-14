@@ -51,14 +51,39 @@ public class StripeService {
     public String createPaymentIntent(PaymentRequest paymentRequest) throws StripeException {
         long amountInCents = (long) (paymentRequest.getAmount() * 100);
 
+        Map<String, String> metadata = new HashMap<>();
+
+        if (paymentRequest.getTuitionNumber() != null) {
+            TuitionId tuitionId = new TuitionId();
+            tuitionId.setPayer(paymentRequest.getPayer());
+            tuitionId.setNumber(paymentRequest.getTuitionNumber());
+
+            Optional<Tuition> optionalTuition = tuitionRepository.findById(tuitionId);
+            if (optionalTuition.isEmpty()) {
+                throw new RuntimeException("Tuition not found");
+            }
+
+            metadata.put("payer", paymentRequest.getPayer());
+            metadata.put("tuitionNumber", paymentRequest.getTuitionNumber().toString());
+            metadata.put("paymentType", "tuition");
+        } else {
+            if (paymentRequest.getPayer() != null) {
+                metadata.put("payer", paymentRequest.getPayer());
+            }
+            metadata.put("paymentType", "general");
+        }
+
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
                 .setAmount(amountInCents)
                 .setCurrency(paymentRequest.getCurrency().toLowerCase())
-                .putMetadata("payer", paymentRequest.getPayer())
-                .putMetadata("tuitionNumber", String.valueOf(paymentRequest.getTuitionNumber()))
-                .setConfirmationMethod(PaymentIntentCreateParams.ConfirmationMethod.AUTOMATIC)
-                .addPaymentMethodType("card")
+                .putAllMetadata(metadata)
+                .setAutomaticPaymentMethods(
+                        PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
+                                .setEnabled(true)
+                                .build()
+                )
                 .build();
+
 
         PaymentIntent paymentIntent = PaymentIntent.create(params);
         return paymentIntent.getClientSecret();
@@ -68,43 +93,49 @@ public class StripeService {
     public boolean processSuccessfulPayment(String paymentIntentId) throws StripeException {
         PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
 
-        if (!"succeded".equals(paymentIntent.getStatus())) {
+        if (!"succeeded".equals(paymentIntent.getStatus())) {
             return false;
         }
 
-        String payer = paymentIntent.getMetadata().get("payer");
-        Integer tuitionNumber = Integer.parseInt(paymentIntent.getMetadata().get("tuitionNumber"));
+        Map<String, String> metadata = paymentIntent.getMetadata();
+        String paymentType = metadata.getOrDefault("paymentType", "general");
 
-        TuitionId tuitionId = new TuitionId();
-        tuitionId.setPayer(payer);
-        tuitionId.setNumber(tuitionNumber);
 
-        Optional<Tuition> optionalTuition = tuitionRepository.findById(tuitionId);
-        if (optionalTuition.isEmpty()) {
-            throw new RuntimeException("Tuition not found");
+        if("tuition".equals(paymentType) && metadata.containsKey("payer") && metadata.containsKey("tuitionNumber")) {
+            String payer = paymentIntent.getMetadata().get("payer");
+            Integer tuitionNumber = Integer.parseInt(paymentIntent.getMetadata().get("tuitionNumber"));
+
+            TuitionId tuitionId = new TuitionId();
+            tuitionId.setPayer(payer);
+            tuitionId.setNumber(tuitionNumber);
+
+            Optional<Tuition> optionalTuition = tuitionRepository.findById(tuitionId);
+            if (optionalTuition.isEmpty()) {
+                throw new RuntimeException("Tuition not found");
+            }
+            Tuition tuition = optionalTuition.get();
+            double originalPrice = tuition.getPrice();
+
+            tuition.setPrice(0.0);
+            tuitionRepository.save(tuition);
+
+            PaidTuition paidTuition = new PaidTuition();
+
+            PaidTuitionId paidTuitionId = new PaidTuitionId();
+            paidTuitionId.setPayer(payer);
+            paidTuitionId.setNumber(tuitionNumber);
+
+            paidTuition.setId(paidTuitionId);
+            paidTuition.setSeries("ONL");
+            paidTuition.setPaymentNumber(generatePaymentNumber());
+            paidTuition.setDate(LocalDate.now());
+            paidTuition.setPrice(originalPrice);
+            paidTuition.setDescription(tuition.getDescription());
+            paidTuition.setMessage("Paid online via Stripe!");
+
+            paidTuitionRepository.save(paidTuition);
+
         }
-        Tuition tuition = optionalTuition.get();
-        double originalPrice = tuition.getPrice();
-
-        tuition.setPrice(0.0);
-        tuitionRepository.save(tuition);
-
-        PaidTuition paidTuition = new PaidTuition();
-
-        PaidTuitionId paidTuitionId = new PaidTuitionId();
-        paidTuitionId.setPayer(payer);
-        paidTuitionId.setNumber(tuitionNumber);
-
-        paidTuition.setId(paidTuitionId);
-        paidTuition.setSeries("ONL");
-        paidTuition.setPaymentNumber(generatePaymentNumber());
-        paidTuition.setDate(LocalDate.now());
-        paidTuition.setPrice(originalPrice);
-        paidTuition.setDescription(tuition.getDescription());
-        paidTuition.setMessage("Paid online via Stripe!");
-
-        paidTuitionRepository.save(paidTuition);
-
         return true;
     }
 
