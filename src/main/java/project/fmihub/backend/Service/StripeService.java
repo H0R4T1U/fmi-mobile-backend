@@ -108,6 +108,7 @@ public class StripeService {
             TuitionId tuitionId = new TuitionId();
             tuitionId.setPayer(payer);
             tuitionId.setNumber(tuitionNumber);
+            System.out.println("Payer given: " + payer + "with tuition number: " + tuitionNumber);
 
             Optional<Tuition> optionalTuition = tuitionRepository.findById(tuitionId);
             if (optionalTuition.isEmpty()) {
