@@ -59,8 +59,15 @@ public class PaymentController {
     }
 
     @PostMapping("/success")
-    public ResponseEntity<?> confirmPayment(@RequestParam String paymentIntentId) throws StripeException {
+    public ResponseEntity<?> confirmPayment(@RequestParam Map<String, Object> requestMap) throws StripeException {
         try {
+            String paymentIntentId = (String) requestMap.get("paymentIntentId");
+            if (paymentIntentId == null) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "payment id is null");
+                return ResponseEntity.badRequest().body(error);
+            }
+
             boolean success = stripeService.processSuccessfulPayment(paymentIntentId);
 
             if (success) {
