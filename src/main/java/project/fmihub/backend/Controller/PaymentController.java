@@ -21,28 +21,24 @@ public class PaymentController {
     private StripeService stripeService;
 
     @PostMapping("/create-checkout-session")
-    public ResponseEntity<?> createCheckoutSession(@RequestBody PaymentRequest paymentRequest) throws StripeException {
+    public ResponseEntity<?> createCheckoutSession(@RequestBody Map<String, Object> requestMap) throws StripeException {
         try {
-            //double amount = ((Number) requestMap.get("amount")).doubleValue();
+            double amount = ((Number) requestMap.get("amount")).doubleValue();
 
-//            PaymentRequest paymentRequest = new PaymentRequest();
-//            paymentRequest.setAmount(amount);
-//            paymentRequest.setCurrency("RON");
-//
-//            String currentUser = "defauldUser";
-//            if (requestMap.containsKey("payer")) {
-//                currentUser = (String) requestMap.get("payer");
-//            }
-//            paymentRequest.setPayer(currentUser);
-//
-//            Integer tuitionNumber = null;
-//            if (requestMap.containsKey("tuitionNumber")) {
-//                tuitionNumber = ((Number) requestMap.get("tuitionNumber")).intValue();
-//                paymentRequest.setTuitionNumber(tuitionNumber);
-//            }
+            PaymentRequest paymentRequest = new PaymentRequest();
+            paymentRequest.setAmount(amount);
+            paymentRequest.setCurrency("RON");
 
-            if (paymentRequest.getCurrency() == null) {
-                paymentRequest.setCurrency("ron");
+            String currentUser = "defauldUser";
+            if (requestMap.containsKey("payer")) {
+                currentUser = (String) requestMap.get("payer");
+            }
+            paymentRequest.setPayer(currentUser);
+
+            Integer tuitionNumber = null;
+            if (requestMap.containsKey("tuitionNumber")) {
+                tuitionNumber = ((Number) requestMap.get("tuitionNumber")).intValue();
+                paymentRequest.setTuitionNumber(tuitionNumber);
             }
 
             String clientSecret = stripeService.createPaymentIntent(paymentRequest);
