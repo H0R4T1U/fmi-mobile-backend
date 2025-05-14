@@ -134,6 +134,7 @@ public class StripeService {
             paidTuition.setDescription(tuition.getDescription());
             paidTuition.setMessage("Paid");
 
+            tuitionRepository.delete(tuition);
             paidTuitionRepository.save(paidTuition);
 
         }
