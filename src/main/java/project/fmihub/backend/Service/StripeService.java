@@ -132,7 +132,7 @@ public class StripeService {
             paidTuition.setDate(LocalDate.now());
             paidTuition.setPrice(originalPrice);
             paidTuition.setDescription(tuition.getDescription());
-            paidTuition.setMessage("Paid online via Stripe!");
+            paidTuition.setMessage("Paid");
 
             paidTuitionRepository.save(paidTuition);
 
