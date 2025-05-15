@@ -6,4 +6,6 @@ import lombok.Data;
 public class PaymentRequest {
     private double amount;
     private String currency;
+    private String payer;
+    private Integer tuitionNumber;
 }
