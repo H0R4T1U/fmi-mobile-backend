@@ -26,7 +26,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'com.rometools:rome:1.18.0'
-
     // Spring Cloud Azure dependencies
     implementation "org.springframework.security:spring-security-config"
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
