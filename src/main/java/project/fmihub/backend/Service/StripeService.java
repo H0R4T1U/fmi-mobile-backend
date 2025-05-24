@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import project.fmihub.backend.Domain.*;
 import project.fmihub.backend.Repository.PaidTuitionRepository;
 import project.fmihub.backend.Repository.TuitionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -25,6 +27,9 @@ import java.util.Optional;
 
 @Service
 public class StripeService {
+
+    private static final Logger logger = LoggerFactory.getLogger(StripeService.class);
+
     @Value("${STRIPE_SECRET_KEY}")
     private String secretKey;
 
@@ -37,6 +42,7 @@ public class StripeService {
     @PostConstruct
     public void init(){
         Stripe.apiKey = secretKey;
+        logger.info("Stripe API Key initialized");
     }
 //    public Charge charge(ChargeRequest chargeRequest)
 //        throws AuthenticationException, InvalidRequestException, APIConnectionException, CardException, APIException {
@@ -60,6 +66,7 @@ public class StripeService {
 
             Optional<Tuition> optionalTuition = tuitionRepository.findById(tuitionId);
             if (optionalTuition.isEmpty()) {
+                logger.warn("Tuition not found for payer: {} and number: {}", paymentRequest.getPayer(), paymentRequest.getTuitionNumber());
                 throw new RuntimeException("Tuition not found");
             }
 
@@ -86,6 +93,7 @@ public class StripeService {
 
 
         PaymentIntent paymentIntent = PaymentIntent.create(params);
+        logger.info("Created PaymentIntent with ID: {}", paymentIntent.getId());
         return paymentIntent.getClientSecret();
     }
 
@@ -94,6 +102,7 @@ public class StripeService {
         PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
 
         if (!"succeeded".equals(paymentIntent.getStatus())) {
+            logger.warn("PaymentIntent {} not successful. Status: {}", paymentIntentId, paymentIntent.getStatus());
             return false;
         }
 
@@ -105,6 +114,8 @@ public class StripeService {
             String payer = paymentIntent.getMetadata().get("payer");
             Integer tuitionNumber = Integer.parseInt(paymentIntent.getMetadata().get("tuitionNumber"));
 
+            logger.info("Processing tuition payment for payer: {}, tuition number: {}", payer, tuitionNumber);
+
             TuitionId tuitionId = new TuitionId();
             tuitionId.setPayer(payer);
             tuitionId.setNumber(tuitionNumber);
@@ -112,6 +123,7 @@ public class StripeService {
 
             Optional<Tuition> optionalTuition = tuitionRepository.findById(tuitionId);
             if (optionalTuition.isEmpty()) {
+                logger.error("Tuition not found for payer: {}, number: {}", payer, tuitionNumber);
                 throw new RuntimeException("Tuition not found");
             }
             Tuition tuition = optionalTuition.get();
@@ -137,6 +149,7 @@ public class StripeService {
             tuitionRepository.delete(tuition);
             paidTuitionRepository.save(paidTuition);
 
+            logger.info("Tuition marked as paid and moved to PaidTuition for payer: {}, number: {}", payer, tuitionNumber);
         }
         return true;
     }
