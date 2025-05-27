@@ -9,7 +9,6 @@ public class AttendanceDTO {
     private String type;
     private Integer position;
     private Boolean attendance;
-    private Map<String, Map<String, List<Integer>>> courseFrequencies;
 
     public String getEmail() {
         return email;
@@ -51,11 +50,5 @@ public class AttendanceDTO {
         this.attendance = attendance;
     }
 
-    public Map<String, Map<String, List<Integer>>> getCourseFrequencies() {
-        return courseFrequencies;
-    }
 
-    public void setCourseFrequencies(Map<String, Map<String, List<Integer>>> courseFrequencies) {
-        this.courseFrequencies = courseFrequencies;
-    }
 }
