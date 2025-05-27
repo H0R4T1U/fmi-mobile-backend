@@ -8,7 +8,8 @@ import project.fmihub.backend.DTO.ClassScheduleDTO;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+
 import java.util.stream.Collectors;
 
 @Component
@@ -22,21 +23,37 @@ public class AttendanceClient {
         this.objectMapper = new ObjectMapper();
     }
 
-    public Set<String> fetchUniqueCourseNames(String url) {
+    public Map<String, Map<String, List<Integer>>> fetchCourseFrequenciesByType(String url) {
         try {
             String jsonResponse = restTemplate.getForObject(url, String.class);
             List<ClassScheduleDTO> schedules = objectMapper.readValue(
-                    jsonResponse, new TypeReference<>() {
-                    }
+                    jsonResponse, new TypeReference<>() {}
             );
 
-            return schedules.stream()
-                    .map(ClassScheduleDTO::getCourseInstanceName)
-                    .filter(name -> name != null && !name.isBlank())
-                    .collect(Collectors.toSet());
+            // Step 1: Group course names → class types → frequencies
+            Map<String, Map<String, List<Integer>>> result = schedules.stream()
+                    .filter(s -> s.getCourseInstanceName() != null && s.getClassType() != null)
+                    .collect(Collectors.groupingBy(
+                            ClassScheduleDTO::getCourseInstanceName,
+                            Collectors.groupingBy(
+                                    ClassScheduleDTO::getClassType,
+                                    Collectors.mapping(
+                                            ClassScheduleDTO::getFrequency,
+                                            Collectors.toList()
+                                    )
+                            )
+                    ));
+
+            // Step 2: Add -1 for missing Seminar type
+            for (Map<String, List<Integer>> typeMap : result.values()) {
+                typeMap.putIfAbsent("Seminar", List.of(-1));
+            }
+
+            return result;
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to parse course data", e);
         }
     }
+
 }

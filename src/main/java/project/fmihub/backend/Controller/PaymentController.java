@@ -6,6 +6,8 @@ import com.stripe.param.checkout.SessionCreateParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import project.fmihub.backend.Domain.PaymentRequest;
 import project.fmihub.backend.Service.StripeService;
@@ -19,21 +21,17 @@ public class PaymentController {
 
     @Autowired
     private StripeService stripeService;
-
+    // TODO : Modifica cu adelina si din frontend sa nu m ai trimita mail si sa trimita token jwt
     @PostMapping("/create-checkout-session")
-    public ResponseEntity<?> createCheckoutSession(@RequestBody Map<String, Object> requestMap) throws StripeException {
+    public ResponseEntity<?> createCheckoutSession(@RequestBody Map<String, Object> requestMap,@AuthenticationPrincipal Jwt jwt) throws StripeException {
         try {
             double amount = ((Number) requestMap.get("amount")).doubleValue();
-
+            String payer = jwt.getClaim("upn");
             PaymentRequest paymentRequest = new PaymentRequest();
             paymentRequest.setAmount(amount);
             paymentRequest.setCurrency("RON");
 
-            String currentUser = "defauldUser";
-            if (requestMap.containsKey("payer")) {
-                currentUser = (String) requestMap.get("payer");
-            }
-            paymentRequest.setPayer(currentUser);
+            paymentRequest.setPayer(payer);
 
             Integer tuitionNumber = null;
             if (requestMap.containsKey("tuitionNumber")) {
@@ -59,7 +57,7 @@ public class PaymentController {
     }
 
     @PostMapping("/success")
-    public ResponseEntity<?> confirmPayment(@RequestParam Map<String, Object> requestMap) throws StripeException {
+    public ResponseEntity<?> confirmPayment(@RequestParam Map<String, Object> requestMap,@AuthenticationPrincipal Jwt jwt) throws StripeException {
         try {
             String paymentIntentId = (String) requestMap.get("paymentIntentId");
             if (paymentIntentId == null) {
