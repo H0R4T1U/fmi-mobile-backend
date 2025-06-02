@@ -1,5 +1,7 @@
 package project.fmihub.backend;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +16,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public class SecurityConfig {
 
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
+
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     private String issuer;
 
@@ -22,6 +26,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        log.info("Configuring SecurityFilterChain. Securing all endpoints.");
         http.authorizeHttpRequests(auth -> auth
                         .anyRequest().authenticated()
                 )
@@ -33,6 +38,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
+        log.info("Initializing JWT Decoder with issuer: {}", issuer);
         // Create JwtDecoder instance using the issuer
         NimbusJwtDecoder jwtDecoder = JwtDecoders.fromIssuerLocation(issuer);
 
@@ -44,11 +50,14 @@ public class SecurityConfig {
         // Apply the validator to the decoder
         jwtDecoder.setJwtValidator(validator);
 
+        log.info("JwtDecoder configured with audience validation: {}", audience);
+
         return jwtDecoder;
     }
 
     // AudienceValidator to ensure the 'aud' claim matches the expected value
     public static class AudienceValidator implements OAuth2TokenValidator<Jwt> {
+        private static final Logger logger = LoggerFactory.getLogger(AudienceValidator.class);
         private final String audience;
 
         public AudienceValidator(String audience) {
@@ -57,9 +66,12 @@ public class SecurityConfig {
 
         @Override
         public OAuth2TokenValidatorResult validate(Jwt jwt) {
+            logger.debug("Validating token audience. Expected: {}, Actual: {}", audience, jwt.getAudience());
             if (jwt.getAudience().contains(audience)) {
+                logger.debug("Audience validation passed.");
                 return OAuth2TokenValidatorResult.success();
             }
+            logger.warn("Audience validation failed. Token audience: {}", jwt.getAudience());
             return OAuth2TokenValidatorResult.failure(new OAuth2Error("invalid_token", "Invalid audience", null));
         }
     }
