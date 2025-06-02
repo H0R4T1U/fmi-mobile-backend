@@ -12,7 +12,6 @@ import project.fmihub.backend.Repository.AttendanceRepository;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Service
 public class AttendanceService {
@@ -26,16 +25,11 @@ public class AttendanceService {
         this.repo = repo;
         logger.info("AttendanceService initialized with AttendanceClient");
     }
-    public Set<String> printUniqueCourses(String uid) {
+
+    public Map<String, Map<String, List<Integer>>> printUniqueCourses(String uid) {
         logger.info("Fetching unique courses for user id: {}", uid);
         String url = "https://www.cs.ubbcluj.ro/apps/orar/api/user/classes/" +uid + "/ro-RO";
         logger.debug("Constructed URL: {}", url);
-        return client.fetchUniqueCourseNames(url);
-        
-    }
-
-    public Map<String, Map<String, List<Integer>>> printUniqueCourses(String uid) {
-        String url = "https://www.cs.ubbcluj.ro/apps/orar/api/user/classes/" +uid + "/ro-RO";
         return client.fetchCourseFrequenciesByType(url);
     }
     public List<Attendance> getAttendanceByEmailAndClassField(String email, String classField) {
